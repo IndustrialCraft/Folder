@@ -6,4 +6,7 @@ public class MathUtils {
             throw new IllegalArgumentException("lerp value must be in range 0..1");
         return (a*(1-value)) + (b*value);
     }
+    public static float distanceSquared(int x, int y){
+        return (x*x)+(y*y);
+    }
 }

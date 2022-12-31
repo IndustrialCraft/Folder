@@ -36,7 +36,7 @@ public class FolderMain extends ApplicationAdapter {
 		node.nodeTexture.texture = new TextureRegion(head);
 		Animation animation = new Animation();
 		animation.transforms.add(new Animation.TransformWithLength(new Transform(0, 0, 0, 1, 1), 1));
-		animation.transforms.add(new Animation.TransformWithLength(new Transform(100, 50, (float) Math.toRadians(90), 0.5f, 1), 1));
+		animation.transforms.add(new Animation.TransformWithLength(new Transform(100, 50, (float) Math.toRadians(90), 0.5f, 1), 2));
 		animation.transforms.add(new Animation.TransformWithLength(new Transform(200, 50, 0, 1, 1), 1));
 		node.animations.put("a", animation);
 		this.animationEditor = new AnimationEditor(node);
@@ -51,10 +51,11 @@ public class FolderMain extends ApplicationAdapter {
 	}
 	@Override
 	public void render () {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		this.batch.setProjectionMatrix(sceneCamera.combined);
 		time += Gdx.graphics.getDeltaTime();
+		Gdx.gl.glViewport(0, (int) (AnimationEditor.SCREEN_SPACE*Gdx.graphics.getHeight()), (int) ((1-KeyframeEditorWindow.SCREEN_SPACE)*sceneCamera.viewportWidth), (int) (sceneCamera.viewportHeight*(1-AnimationEditor.SCREEN_SPACE)));
 		batch.begin();
 		node.drawRecursively(batch, "a", time);
 		batch.end();
