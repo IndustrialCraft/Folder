@@ -27,7 +27,7 @@ public class AnimationEditor {
     private OrthographicCamera camera;
     private BitmapFont font;
     private GlyphLayout fontLayout;
-    public String animation;
+    private String animation;
     private float timeToXMultiplier = 50;
     private KeyframeEditorWindow editorWindow;
     private Consumer<Float> timeSetter;
@@ -45,6 +45,14 @@ public class AnimationEditor {
         this.fontLayout = new GlyphLayout();
         this.animation = null;
         this.editorWindow = new KeyframeEditorWindow(fileChooser, pauseButtonCallback, () -> timeSetter.accept(0f));
+    }
+    public String getAnimation() {
+        return animation;
+    }
+    public void setAnimation(String animation) {
+        this.animation = animation;
+        this.editorWindow.clear();
+        this.editorWindow.setAnimationName(animation);
     }
     public Transform getSelectedTransform(float time){
         return editorWindow.getSelectedTransform(time);
@@ -68,7 +76,7 @@ public class AnimationEditor {
         if(animation == null)
             return;
         Set<Node> nodes = rootNode.getChildAndSelfRecursively();
-        float maxTextSize = nodes.stream().map(node -> {fontLayout.setText(font, node.name);return fontLayout.width;}).reduce(0f, Math::max);
+        float maxTextSize = nodes.stream().map(node -> {fontLayout.setText(font, node.getRealName());return fontLayout.width;}).reduce(0f, Math::max);
         int yIndex = 0;
         for(Node node : nodes){
             drawRow(node, maxTextSize, yIndex);
@@ -119,14 +127,30 @@ public class AnimationEditor {
             timeAccumulator += transform.length;
             i++;
         }
-        shapeRenderer.setColor(0.5f, 0, 0, 1);
-        shapeRenderer.rect(0, startPosY, NODE_SETTING_WIDTH, height/2);
-        shapeRenderer.setColor(0, 0.5f, 0, 1);
+        if(node.parent != null) {
+            if (mouse.x >= 0 && mouse.y >= startPosY && mouse.x <= NODE_SETTING_WIDTH && mouse.y <= startPosY + height / 2) {
+                shapeRenderer.setColor(1, 0, 0, 1);
+                if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)){
+                    node.parent.removeChild(node);
+                }
+            } else {
+                shapeRenderer.setColor(0.5f, 0, 0, 1);
+            }
+            shapeRenderer.rect(0, startPosY, NODE_SETTING_WIDTH, height / 2);
+        }
+        if(mouse.x >= 0 && mouse.y >= startPosY+(height/2) && mouse.x <= NODE_SETTING_WIDTH && mouse.y <= startPosY + height){
+            shapeRenderer.setColor(0, 1, 0, 1);
+            if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)){
+                node.addChild(new Node(node));
+            }
+        } else {
+            shapeRenderer.setColor(0, 0.5f, 0, 1);
+        }
         shapeRenderer.rect(0, startPosY+(height/2), NODE_SETTING_WIDTH, height/2);
         shapeRenderer.end();
         spriteBatch.begin();
-        fontLayout.setText(font, node.name);
-        font.draw(spriteBatch, node.name, NODE_SETTING_WIDTH + NAME_PADDING, startPosY+(height/2)+(fontLayout.height/2));
+        fontLayout.setText(font, node.getRealName());
+        font.draw(spriteBatch, node.getRealName(), NODE_SETTING_WIDTH + NAME_PADDING, startPosY+(height/2)+(fontLayout.height/2));
         spriteBatch.end();
     }
     public void dispose(){

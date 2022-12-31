@@ -33,6 +33,7 @@ public class KeyframeEditorWindow {
     private Table controlsTable;
     private NativeFileChooserConfiguration textureFileChooser;
     private NativeFileChooser fileChooser;
+    private Label animationNameLabel;
     public KeyframeEditorWindow(NativeFileChooser fileChooser, Runnable pauseButtonCallback, Runnable resetButtonCallback) {
         this.fileChooser = fileChooser;
         this.textureFileChooser = new NativeFileChooserConfiguration();
@@ -63,10 +64,20 @@ public class KeyframeEditorWindow {
             }
         });
         this.controlsTable.add(resetButton);
+        this.animationNameLabel = new Label("", skin);
+        this.controlsTable.add(animationNameLabel);
         table = new VerticalGroup();
         table.addActor(controlsTable);
         table.setFillParent(true);
         stage.addActor(table);
+    }
+    public void setAnimationName(String name){
+        animationNameLabel.setText("animation: " + name);
+    }
+    public void clear(){
+        table.clear();
+        table.addActor(controlsTable);
+        controllingAnimation = null;
     }
     public void setEditing(Node node, String animation, int index){
         this.controllingNode = node;

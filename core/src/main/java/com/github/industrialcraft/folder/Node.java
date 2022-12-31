@@ -33,7 +33,7 @@ public class Node {
         this(null);
     }
     public Transform getTransformedTransform(String animation, float time){
-        Transform thisLerped = animations.get(animation).getLerpedTransformFor(time);
+        Transform thisLerped = getOrCreateAnimation(animation).getLerpedTransformFor(time);
         if(parent == null)
             return thisLerped;
         return parent.getTransformedTransform(animation, time).transform(thisLerped);
@@ -49,6 +49,9 @@ public class Node {
     }
     public void draw(SpriteBatch batch, String animation, float time){
         this.nodeTexture.draw(batch, getTransformedTransform(animation, time));
+    }
+    public String getRealName(){
+        return name + "(" + (parent==null?"root":parent.name) + ")";
     }
     public HashSet<Node> getChildAndSelfRecursively(){
         HashSet<Node> set = new HashSet<>();
