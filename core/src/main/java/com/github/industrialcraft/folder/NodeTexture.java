@@ -15,7 +15,7 @@ public class NodeTexture {
     public void draw(SpriteBatch batch, Transform transform){
         if(texture == null)
             return;
-        batch.setColor(1, 1, 1, transform.opacity());
-        batch.draw(texture, transform.x(), transform.y(), xOrigin, yOrigin, texture.getRegionWidth(), texture.getRegionHeight(), transform.size(), transform.size(), (float)Math.toDegrees(transform.rotation()));
+        batch.setColor(1, 1, 1, transform.opacity);
+        batch.draw(texture, transform.x, transform.y, xOrigin, yOrigin, texture.getRegionWidth(), texture.getRegionHeight(), transform.size, transform.size, (float)Math.toDegrees(transform.rotation));
     }
 }

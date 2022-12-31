@@ -3,7 +3,20 @@ package com.github.industrialcraft.folder;
 import mikera.matrixx.Matrix22;
 import mikera.vectorz.Vector2;
 
-public record Transform(float x, float y, float rotation, float size, float opacity) {
+public class Transform {
+    public float x;
+    public float y;
+    public float rotation;
+    public float size;
+    public float opacity;
+    public Transform(float x, float y, float rotation, float size, float opacity) {
+        this.x = x;
+        this.y = y;
+        this.rotation = rotation;
+        this.size = size;
+        this.opacity = opacity;
+    }
+
     public Transform transform(Transform other){
         Vector2 position = new Vector2(other.x, other.y);
         Matrix22 rotation = Matrix22.createRotationMatrix(this.rotation);

@@ -24,7 +24,12 @@ public class Animation {
         }
         throw new IllegalStateException("something went wrong");
     }
-    public record TransformWithLength(Transform transform, float length){
-
+    public static class TransformWithLength{
+        public final Transform transform;
+        public float length;
+        public TransformWithLength(Transform transform, float length) {
+            this.transform = transform;
+            this.length = length;
+        }
     }
 }

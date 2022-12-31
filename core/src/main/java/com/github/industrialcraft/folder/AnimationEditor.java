@@ -1,6 +1,7 @@
 package com.github.industrialcraft.folder;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -26,7 +27,7 @@ public class AnimationEditor {
     public String animation;
     private float timeToXMultiplier = 50;
     private KeyframeEditorWindow editorWindow;
-    public AnimationEditor(Node rootNode) {
+    public AnimationEditor(Node rootNode, Runnable pauseButtonCallback, Runnable resetButtonCallback) {
         this.rootNode = rootNode;
         this.spriteBatch = new SpriteBatch();
         this.shapeRenderer = new ShapeRenderer();
@@ -38,7 +39,7 @@ public class AnimationEditor {
         this.font = new BitmapFont();
         this.fontLayout = new GlyphLayout();
         this.animation = null;
-        this.editorWindow = new KeyframeEditorWindow();
+        this.editorWindow = new KeyframeEditorWindow(pauseButtonCallback, resetButtonCallback);
     }
     public void resize(int width, int height){
         this.camera.viewportWidth = width;
@@ -85,25 +86,26 @@ public class AnimationEditor {
         shapeRenderer.line(0, startPosY, Gdx.graphics.getWidth(), startPosY);
         shapeRenderer.line(splitterX, startPosY, splitterX, startPosY+height);
         shapeRenderer.setColor(1, 1, 1, 1);
-        float totalAnimationLength = node.getOrCreateAnimation(animation).transforms.stream().map(Animation.TransformWithLength::length).reduce(0f, Float::sum);
+        float totalAnimationLength = node.getOrCreateAnimation(animation).transforms.stream().map(e -> e.length).reduce(0f, Float::sum);
         shapeRenderer.line(splitterX, startPosY+(height/2), splitterX+(totalAnimationLength*timeToXMultiplier), startPosY+(height/2));
         shapeRenderer.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         float timeAccumulator = 0;
-
+        int i = 0;
         for(Animation.TransformWithLength transform : node.getOrCreateAnimation(animation).transforms){
             float markerX = splitterX+(timeAccumulator*timeToXMultiplier);
             float markerY = startPosY+(height/2);
             if(MathUtils.distanceSquared((int) (mouse.x-markerX), (int) (mouse.y-markerY)) < MARKER_RADIUS*MARKER_RADIUS){
-                if(Gdx.input.isButtonJustPressed(1)){
-                    //todo: select node
+                if(Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)){
+                    this.editorWindow.setEditing(node, animation, i);
                 }
                 shapeRenderer.setColor(0, 1, 0, 1);
             } else {
                 shapeRenderer.setColor(1, 1, 1, 1);
             }
             shapeRenderer.circle(markerX, markerY, MARKER_RADIUS);
-            timeAccumulator += transform.length();
+            timeAccumulator += transform.length;
+            i++;
         }
         shapeRenderer.end();
         spriteBatch.begin();

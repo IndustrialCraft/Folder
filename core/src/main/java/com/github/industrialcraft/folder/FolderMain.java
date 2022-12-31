@@ -13,6 +13,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class FolderMain extends ApplicationAdapter {
 	private SpriteBatch batch;
@@ -20,9 +23,10 @@ public class FolderMain extends ApplicationAdapter {
 	private Texture face;
 	private Texture body;
 	private Node node;
-	private float time;
+	private AtomicReference<Float> time;
 	private OrthographicCamera sceneCamera;
 	private AnimationEditor animationEditor;
+	private AtomicBoolean paused = new AtomicBoolean(true);
 	@Override
 	public void create () {
 		this.sceneCamera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -31,7 +35,7 @@ public class FolderMain extends ApplicationAdapter {
 		head = new Texture("head.png");
 		face = new Texture("face.png");
 		body = new Texture("body.png");
-		time = 0;
+		time = new AtomicReference<>(0f);
 		node = new Node();
 		node.nodeTexture.texture = new TextureRegion(head);
 		Animation animation = new Animation();
@@ -39,7 +43,12 @@ public class FolderMain extends ApplicationAdapter {
 		animation.transforms.add(new Animation.TransformWithLength(new Transform(100, 50, (float) Math.toRadians(90), 0.5f, 1), 2));
 		animation.transforms.add(new Animation.TransformWithLength(new Transform(200, 50, 0, 1, 1), 1));
 		node.animations.put("a", animation);
-		this.animationEditor = new AnimationEditor(node);
+		this.animationEditor = new AnimationEditor(node, () -> {
+			paused.set(!paused.get());
+		}, () -> {
+			time.set(0f);
+			paused.set(true);
+		});
 		this.animationEditor.animation = "a";
 	}
 	@Override
@@ -54,12 +63,13 @@ public class FolderMain extends ApplicationAdapter {
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		this.batch.setProjectionMatrix(sceneCamera.combined);
-		time += Gdx.graphics.getDeltaTime();
+		if(!paused.get())
+			time.set(time.get()+Gdx.graphics.getDeltaTime());
 		Gdx.gl.glViewport(0, (int) (AnimationEditor.SCREEN_SPACE*Gdx.graphics.getHeight()), (int) ((1-KeyframeEditorWindow.SCREEN_SPACE)*sceneCamera.viewportWidth), (int) (sceneCamera.viewportHeight*(1-AnimationEditor.SCREEN_SPACE)));
 		batch.begin();
-		node.drawRecursively(batch, "a", time);
+		node.drawRecursively(batch, "a", time.get());
 		batch.end();
-		this.animationEditor.draw(time);
+		this.animationEditor.draw(time.get());
 	}
 	@Override
 	public void dispose() {

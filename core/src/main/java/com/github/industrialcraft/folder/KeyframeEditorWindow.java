@@ -4,19 +4,29 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class KeyframeEditorWindow {
     public static float SCREEN_SPACE = 0.4f;
     private Stage stage;
-    private Table table;
+    private VerticalGroup table;
     private Skin skin;
     private InputMultiplexer multiplexer;
-    public KeyframeEditorWindow() {
+    private Node controllingNode;
+    private Animation controllingAnimation;
+    private int controllingTransformIndex;
+    private Table controlsTable;
+    public KeyframeEditorWindow(Runnable pauseButtonCallback, Runnable resetButtonCallback) {
         this.multiplexer = new InputMultiplexer();
         //this.multiplexer.addProcessor(MOUSE_COORD_CHECKING_INPUT_PROCESSOR);
         this.stage = new Stage();
@@ -24,13 +34,51 @@ public class KeyframeEditorWindow {
         Gdx.input.setInputProcessor(multiplexer);
         this.skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         stage.setViewport(new CustomScreenViewport());
-
-        table = new Table();
+        this.controlsTable = new Table();
+        TextButton pauseButton = new TextButton("pause/resume", skin);
+        pauseButton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                pauseButtonCallback.run();
+            }
+        });
+        this.controlsTable.add(pauseButton);
+        TextButton resetButton = new TextButton("reset", skin);
+        resetButton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                resetButtonCallback.run();
+            }
+        });
+        this.controlsTable.add(resetButton);
+        table = new VerticalGroup();
+        table.addActor(controlsTable);
         table.setFillParent(true);
         stage.addActor(table);
-
-        TextField textField = new TextField("aaa", skin);
-        table.add(textField);
+    }
+    public void setEditing(Node node, String animation, int index){
+        this.controllingNode = node;
+        this.controllingAnimation = node.getOrCreateAnimation(animation);
+        this.controllingTransformIndex = index;
+        table.clear();
+        table.addActor(controlsTable);
+        addNumberedField("duration", table, n -> controllingAnimation.transforms.get(index).length=n, () -> controllingAnimation.transforms.get(index).length);
+        addNumberedField("x", table, n -> controllingAnimation.transforms.get(index).transform.x=n, () -> controllingAnimation.transforms.get(index).transform.x);
+        addNumberedField("y", table, n -> controllingAnimation.transforms.get(index).transform.y=n, () -> controllingAnimation.transforms.get(index).transform.y);
+        addNumberedField("rotation", table, n -> controllingAnimation.transforms.get(index).transform.rotation=n, () -> controllingAnimation.transforms.get(index).transform.rotation);
+        addNumberedField("size", table, n -> controllingAnimation.transforms.get(index).transform.size=n, () -> controllingAnimation.transforms.get(index).transform.size);
+        addNumberedField("opacity", table, n -> controllingAnimation.transforms.get(index).transform.opacity=n, () -> controllingAnimation.transforms.get(index).transform.opacity);
+    }
+    public void addNumberedField(String name, VerticalGroup table, Consumer<Float> setter, Supplier<Float> getter){
+        table.addActor(new Label(name+":", skin));
+        TextField btn = new TextField(""+getter.get(), skin);
+        btn.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
+        btn.setTextFieldListener((textField, c) -> {
+            if(btn.getText().isEmpty())
+                return;
+            setter.accept(Float.parseFloat(textField.getText()));
+        });
+        table.addActor(btn);
     }
     public void draw(){
         stage.getViewport().apply(true);
@@ -45,41 +93,4 @@ public class KeyframeEditorWindow {
     public void dispose(){
         this.stage.dispose();
     }
-    public static final InputProcessor MOUSE_COORD_CHECKING_INPUT_PROCESSOR = new InputProcessor() {
-        public static boolean checkMouse(){
-            return !(Gdx.input.getX()>(1-SCREEN_SPACE)*Gdx.graphics.getWidth()&&Gdx.input.getY()<(1-AnimationEditor.SCREEN_SPACE)*Gdx.graphics.getHeight());
-        }
-        @Override
-        public boolean keyDown(int keycode) {
-            return checkMouse();
-        }
-        @Override
-        public boolean keyUp(int keycode) {
-            return checkMouse();
-        }
-        @Override
-        public boolean keyTyped(char character) {
-            return checkMouse();
-        }
-        @Override
-        public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-            return checkMouse();
-        }
-        @Override
-        public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-            return checkMouse();
-        }
-        @Override
-        public boolean touchDragged(int screenX, int screenY, int pointer) {
-            return checkMouse();
-        }
-        @Override
-        public boolean mouseMoved(int screenX, int screenY) {
-            return checkMouse();
-        }
-        @Override
-        public boolean scrolled(float amountX, float amountY) {
-            return checkMouse();
-        }
-    };
 }
