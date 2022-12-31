@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 
 public class AnimationEditor {
     public static final Color BACKGROUND_COLOR = new Color(0.4f, 0.4f, 0.4f, 1);
+    public static final float NODE_SETTING_WIDTH = 15;
     public static final float MARKER_RADIUS = 8;
     public static final float NAME_PADDING = 10;
     public static int ROWS_ON_SCREEN = 4;
@@ -71,7 +72,7 @@ public class AnimationEditor {
         }
         shapeRenderer.begin();
         shapeRenderer.setColor(0, 1, 0, 1);
-        shapeRenderer.line(maxTextSize+(NAME_PADDING*2)+(playTime*timeToXMultiplier), 0, maxTextSize+(NAME_PADDING*2)+(playTime*timeToXMultiplier), SCREEN_SPACE*Gdx.graphics.getHeight());
+        shapeRenderer.line(maxTextSize+NODE_SETTING_WIDTH+(NAME_PADDING*2)+(playTime*timeToXMultiplier), 0, maxTextSize+NODE_SETTING_WIDTH+(NAME_PADDING*2)+(playTime*timeToXMultiplier), SCREEN_SPACE*Gdx.graphics.getHeight());
         shapeRenderer.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(BACKGROUND_COLOR);
@@ -79,15 +80,15 @@ public class AnimationEditor {
         shapeRenderer.end();
         this.editorWindow.draw();
         Vector3 mouse = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-        if(mouse.y < SCREEN_SPACE*Gdx.graphics.getHeight() && mouse.x > maxTextSize+(NAME_PADDING*2) && Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
-            timeSetter.accept((mouse.x-(maxTextSize+(NAME_PADDING*2)))/timeToXMultiplier);
+        if(mouse.y < SCREEN_SPACE*Gdx.graphics.getHeight() && mouse.x > maxTextSize+NODE_SETTING_WIDTH+(NAME_PADDING*2) && Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+            timeSetter.accept((mouse.x-(maxTextSize+NODE_SETTING_WIDTH+(NAME_PADDING*2)))/timeToXMultiplier);
         }
     }
     public void drawRow(Node node, float maxTextSize, int yIndex){
         Vector3 mouse = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
         float height = (SCREEN_SPACE / ROWS_ON_SCREEN)*Gdx.graphics.getHeight();
         float startPosY = height*(3-yIndex);
-        float splitterX = maxTextSize+(NAME_PADDING*2);
+        float splitterX = maxTextSize+NODE_SETTING_WIDTH+(NAME_PADDING*2);
         shapeRenderer.begin();
         shapeRenderer.setColor(0, 0, 0, 1);
         shapeRenderer.line(0, startPosY, Gdx.graphics.getWidth(), startPosY);
@@ -114,10 +115,14 @@ public class AnimationEditor {
             timeAccumulator += transform.length;
             i++;
         }
+        shapeRenderer.setColor(0.5f, 0, 0, 1);
+        shapeRenderer.rect(0, startPosY, NODE_SETTING_WIDTH, height/2);
+        shapeRenderer.setColor(0, 0.5f, 0, 1);
+        shapeRenderer.rect(0, startPosY+(height/2), NODE_SETTING_WIDTH, height/2);
         shapeRenderer.end();
         spriteBatch.begin();
         fontLayout.setText(font, node.name);
-        font.draw(spriteBatch, node.name, NAME_PADDING, startPosY+(height/2)+(fontLayout.height/2));
+        font.draw(spriteBatch, node.name, NODE_SETTING_WIDTH + NAME_PADDING, startPosY+(height/2)+(fontLayout.height/2));
         spriteBatch.end();
     }
     public void dispose(){

@@ -28,7 +28,7 @@ public class Transform {
     }
     public Transform lerp(Transform other, float value){
         if(value < 0 || value > 1)
-            throw new IllegalArgumentException("lerp value must be in range 0..1");
+            throw new IllegalArgumentException("lerp value must be in range 0..1, was " + value);
         return new Transform(MathUtils.lerp(this.x, other.x, value), MathUtils.lerp(this.y, other.y, value), MathUtils.lerp(this.rotation, other.rotation, value), MathUtils.lerp(this.size, other.size, value), MathUtils.lerp(this.opacity, other.opacity, value));
     }
 }

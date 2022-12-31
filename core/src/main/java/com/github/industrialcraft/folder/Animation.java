@@ -15,13 +15,19 @@ public class Animation {
         float currentTime = 0;
         Transform lastTransform = null;
         for(TransformWithLength part : transforms){
-            if(currentTime+part.length>=time){
-                float lerpTime = 1-((currentTime+part.length-time)/part.length);
-                return (lastTransform==null?part.transform:lastTransform).lerp(part.transform, lerpTime);
+            if(lastTransform == null){
+                lastTransform = part.transform;
+                continue;
+            }
+            if (currentTime + part.length >= time) {
+                float lerpTime = 1 - ((currentTime + part.length - time) / part.length);
+                return (lastTransform == null ? part.transform : lastTransform).lerp(part.transform, lerpTime);
             }
             currentTime += part.length;
             lastTransform = part.transform;
         }
+        if(lastTransform != null)
+            return lastTransform;
         throw new IllegalStateException("something went wrong");
     }
     public static class TransformWithLength{
