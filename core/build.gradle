@@ -4,4 +4,5 @@ eclipse.project.name = appName + '-core'
 dependencies {
 	api "com.badlogicgames.gdx:gdx:$gdxVersion"
 	implementation 'net.mikera:vectorz:0.67.0'
+	implementation "games.spooky.gdx:gdx-nativefilechooser:2.1.0"
 }

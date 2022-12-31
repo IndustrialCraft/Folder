@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
+import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
 import java.util.Set;
 import java.util.function.Consumer;
@@ -30,7 +31,7 @@ public class AnimationEditor {
     private float timeToXMultiplier = 50;
     private KeyframeEditorWindow editorWindow;
     private Consumer<Float> timeSetter;
-    public AnimationEditor(Node rootNode, Runnable pauseButtonCallback, Consumer<Float> timeSetter) {
+    public AnimationEditor(NativeFileChooser fileChooser, Node rootNode, Runnable pauseButtonCallback, Consumer<Float> timeSetter) {
         this.timeSetter = timeSetter;
         this.rootNode = rootNode;
         this.spriteBatch = new SpriteBatch();
@@ -43,7 +44,7 @@ public class AnimationEditor {
         this.font = new BitmapFont();
         this.fontLayout = new GlyphLayout();
         this.animation = null;
-        this.editorWindow = new KeyframeEditorWindow(pauseButtonCallback, () -> timeSetter.accept(0f));
+        this.editorWindow = new KeyframeEditorWindow(fileChooser, pauseButtonCallback, () -> timeSetter.accept(0f));
     }
     public void resize(int width, int height){
         this.camera.viewportWidth = width;

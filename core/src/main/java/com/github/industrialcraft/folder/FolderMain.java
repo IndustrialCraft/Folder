@@ -2,16 +2,12 @@ package com.github.industrialcraft.folder;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,6 +23,10 @@ public class FolderMain extends ApplicationAdapter {
 	private OrthographicCamera sceneCamera;
 	private AnimationEditor animationEditor;
 	private AtomicBoolean paused = new AtomicBoolean(true);
+	private final NativeFileChooser fileChooser;
+	public FolderMain(NativeFileChooser fileChooser) {
+		this.fileChooser = fileChooser;
+	}
 	@Override
 	public void create () {
 		this.sceneCamera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -43,7 +43,7 @@ public class FolderMain extends ApplicationAdapter {
 		animation.transforms.add(new Animation.TransformWithLength(new Transform(100, 50, (float) Math.toRadians(90), 0.5f, 1), 2));
 		animation.transforms.add(new Animation.TransformWithLength(new Transform(200, 50, 0, 1, 1), 1));
 		node.animations.put("a", animation);
-		this.animationEditor = new AnimationEditor(node, () -> {
+		this.animationEditor = new AnimationEditor(fileChooser, node, () -> {
 			paused.set(!paused.get());
 		}, (t) -> {
 			time.set(t);
