@@ -46,6 +46,9 @@ public class AnimationEditor {
         this.animation = null;
         this.editorWindow = new KeyframeEditorWindow(fileChooser, pauseButtonCallback, () -> timeSetter.accept(0f));
     }
+    public Transform getSelectedTransform(float time){
+        return editorWindow.getSelectedTransform(time);
+    }
     public void resize(int width, int height){
         this.camera.viewportWidth = width;
         this.camera.viewportHeight = height;

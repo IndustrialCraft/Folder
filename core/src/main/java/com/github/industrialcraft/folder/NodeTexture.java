@@ -16,6 +16,6 @@ public class NodeTexture {
         if(texture == null)
             return;
         batch.setColor(1, 1, 1, transform.opacity);
-        batch.draw(texture, transform.x, transform.y, xOrigin, yOrigin, texture.getRegionWidth(), texture.getRegionHeight(), transform.size, transform.size, (float)Math.toDegrees(transform.rotation));
+        batch.draw(texture, transform.x-xOrigin, transform.y-yOrigin, xOrigin, yOrigin, texture.getRegionWidth(), texture.getRegionHeight(), transform.size, transform.size, (float)Math.toDegrees(transform.rotation));
     }
 }

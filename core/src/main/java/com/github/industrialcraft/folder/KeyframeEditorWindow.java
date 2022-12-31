@@ -95,7 +95,7 @@ public class KeyframeEditorWindow {
         addNumberedField("duration", table, n -> controllingAnimation.transforms.get(index).length=n, () -> controllingAnimation.transforms.get(index).length);
         addNumberedField("x", table, n -> controllingAnimation.transforms.get(index).transform.x=n, () -> controllingAnimation.transforms.get(index).transform.x);
         addNumberedField("y", table, n -> controllingAnimation.transforms.get(index).transform.y=n, () -> controllingAnimation.transforms.get(index).transform.y);
-        addNumberedField("rotation", table, n -> controllingAnimation.transforms.get(index).transform.rotation=n, () -> controllingAnimation.transforms.get(index).transform.rotation);
+        addNumberedField("rotation", table, n -> controllingAnimation.transforms.get(index).transform.rotation= (float) Math.toRadians(n), () -> (float) Math.toDegrees(controllingAnimation.transforms.get(index).transform.rotation));
         addNumberedField("size", table, n -> controllingAnimation.transforms.get(index).transform.size=n, () -> controllingAnimation.transforms.get(index).transform.size);
         addNumberedField("opacity", table, n -> controllingAnimation.transforms.get(index).transform.opacity=n, () -> controllingAnimation.transforms.get(index).transform.opacity);
         addButton("remove", table, () -> {
@@ -104,12 +104,19 @@ public class KeyframeEditorWindow {
             controllingAnimation.transforms.remove(index);
             table.clear();
             table.addActor(controlsTable);
+            controllingAnimation = null;
         }).setDisabled(index==0);
         addButton("copy", table, () -> {
             controllingAnimation.transforms.add(index+1, new Animation.TransformWithLength(controllingAnimation.transforms.get(index).transform.copy(), controllingAnimation.transforms.get(index).length));
             table.clear();
             table.addActor(controlsTable);
+            controllingAnimation = null;
         });
+    }
+    public Transform getSelectedTransform(float time){
+        if(controllingAnimation == null)
+            return null;
+        return controllingAnimation.getLerpedTransformFor(time);
     }
     private TextButton addButton(String name, VerticalGroup table, Runnable runnable){
         TextButton button = new TextButton(name, skin);
@@ -138,11 +145,13 @@ public class KeyframeEditorWindow {
         HorizontalGroup wrapper = new HorizontalGroup();
         wrapper.addActor(new Label(name+":", skin));
         TextField btn = new TextField(""+getter.get(), skin);
-        btn.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
+        btn.setTextFieldFilter((textField, c) -> Character.isDigit(c) || c == '-');
         btn.setTextFieldListener((textField, c) -> {
             if(btn.getText().isEmpty())
                 return;
-            setter.accept(Float.parseFloat(textField.getText()));
+            try {
+                setter.accept(Float.parseFloat(textField.getText()));
+            } catch (NumberFormatException e){}
         });
         wrapper.addActor(btn);
         table.addActor(wrapper);

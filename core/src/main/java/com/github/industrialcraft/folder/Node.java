@@ -24,6 +24,7 @@ public class Node {
         Animation animation = this.animations.get(name);
         if(animation == null){
             animation = new Animation();
+            animation.transforms.add(new Animation.TransformWithLength(new Transform(0, 0, 0, 1, 1), 1));
             animations.put(name, animation);
         }
         return animation;

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,6 +25,7 @@ public class FolderMain extends ApplicationAdapter {
 	private AnimationEditor animationEditor;
 	private AtomicBoolean paused = new AtomicBoolean(true);
 	private final NativeFileChooser fileChooser;
+	private ShapeRenderer shapeRenderer;
 	public FolderMain(NativeFileChooser fileChooser) {
 		this.fileChooser = fileChooser;
 	}
@@ -32,6 +34,8 @@ public class FolderMain extends ApplicationAdapter {
 		this.sceneCamera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		this.sceneCamera.update();
 		batch = new SpriteBatch();
+		shapeRenderer = new ShapeRenderer();
+		shapeRenderer.setAutoShapeType(true);
 		head = new Texture("head.png");
 		face = new Texture("face.png");
 		body = new Texture("body.png");
@@ -63,12 +67,20 @@ public class FolderMain extends ApplicationAdapter {
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		this.batch.setProjectionMatrix(sceneCamera.combined);
+		this.shapeRenderer.setProjectionMatrix(sceneCamera.combined);
 		if(!paused.get())
 			time.set(time.get()+Gdx.graphics.getDeltaTime());
 		Gdx.gl.glViewport(0, (int) (AnimationEditor.SCREEN_SPACE*Gdx.graphics.getHeight()), (int) ((1-KeyframeEditorWindow.SCREEN_SPACE)*sceneCamera.viewportWidth), (int) (sceneCamera.viewportHeight*(1-AnimationEditor.SCREEN_SPACE)));
 		batch.begin();
 		node.drawRecursively(batch, "a", time.get());
 		batch.end();
+		Transform selectedTransform = animationEditor.getSelectedTransform(time.get());
+		if(selectedTransform != null) {
+			shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+			shapeRenderer.setColor(0, 1, 0, 1);
+			shapeRenderer.circle(selectedTransform.x, selectedTransform.y, 5);
+			shapeRenderer.end();
+		}
 		this.animationEditor.draw(time.get());
 	}
 	@Override
@@ -77,6 +89,7 @@ public class FolderMain extends ApplicationAdapter {
 		face.dispose();
 		body.dispose();
 		batch.dispose();
+		shapeRenderer.dispose();
 		this.animationEditor.dispose();
 	}
 }
