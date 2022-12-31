@@ -45,8 +45,8 @@ public class FolderMain extends ApplicationAdapter {
 		node.animations.put("a", animation);
 		this.animationEditor = new AnimationEditor(node, () -> {
 			paused.set(!paused.get());
-		}, () -> {
-			time.set(0f);
+		}, (t) -> {
+			time.set(t);
 			paused.set(true);
 		});
 		this.animationEditor.animation = "a";

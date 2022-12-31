@@ -16,7 +16,9 @@ public class Transform {
         this.size = size;
         this.opacity = opacity;
     }
-
+    public Transform copy(){
+        return new Transform(x, y, rotation, size, opacity);
+    }
     public Transform transform(Transform other){
         Vector2 position = new Vector2(other.x, other.y);
         Matrix22 rotation = Matrix22.createRotationMatrix(this.rotation);

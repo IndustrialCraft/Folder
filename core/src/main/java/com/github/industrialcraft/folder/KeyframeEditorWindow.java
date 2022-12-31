@@ -62,14 +62,48 @@ public class KeyframeEditorWindow {
         this.controllingTransformIndex = index;
         table.clear();
         table.addActor(controlsTable);
+        addStringField("name", table, s -> node.name=s, () -> node.name);
         addNumberedField("duration", table, n -> controllingAnimation.transforms.get(index).length=n, () -> controllingAnimation.transforms.get(index).length);
         addNumberedField("x", table, n -> controllingAnimation.transforms.get(index).transform.x=n, () -> controllingAnimation.transforms.get(index).transform.x);
         addNumberedField("y", table, n -> controllingAnimation.transforms.get(index).transform.y=n, () -> controllingAnimation.transforms.get(index).transform.y);
         addNumberedField("rotation", table, n -> controllingAnimation.transforms.get(index).transform.rotation=n, () -> controllingAnimation.transforms.get(index).transform.rotation);
         addNumberedField("size", table, n -> controllingAnimation.transforms.get(index).transform.size=n, () -> controllingAnimation.transforms.get(index).transform.size);
         addNumberedField("opacity", table, n -> controllingAnimation.transforms.get(index).transform.opacity=n, () -> controllingAnimation.transforms.get(index).transform.opacity);
+        addButton("remove", table, () -> {
+            if(index == 0)
+                return;
+            controllingAnimation.transforms.remove(index);
+            table.clear();
+            table.addActor(controlsTable);
+        }).setDisabled(index==0);
+        addButton("copy", table, () -> {
+            controllingAnimation.transforms.add(index+1, new Animation.TransformWithLength(controllingAnimation.transforms.get(index).transform.copy(), controllingAnimation.transforms.get(index).length));
+            table.clear();
+            table.addActor(controlsTable);
+        });
     }
-    public void addNumberedField(String name, VerticalGroup table, Consumer<Float> setter, Supplier<Float> getter){
+    private TextButton addButton(String name, VerticalGroup table, Runnable runnable){
+        TextButton button = new TextButton(name, skin);
+        button.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                runnable.run();
+            }
+        });
+        table.addActor(button);
+        return button;
+    }
+    private void addStringField(String name, VerticalGroup table, Consumer<String> setter, Supplier<String> getter){
+        table.addActor(new Label(name+":", skin));
+        TextField btn = new TextField(getter.get(), skin);
+        btn.setTextFieldListener((textField, c) -> {
+            if(btn.getText().isEmpty())
+                return;
+            setter.accept(textField.getText());
+        });
+        table.addActor(btn);
+    }
+    private void addNumberedField(String name, VerticalGroup table, Consumer<Float> setter, Supplier<Float> getter){
         table.addActor(new Label(name+":", skin));
         TextField btn = new TextField(""+getter.get(), skin);
         btn.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());

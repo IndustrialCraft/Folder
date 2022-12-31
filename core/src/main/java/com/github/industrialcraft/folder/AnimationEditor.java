@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class AnimationEditor {
     public static final Color BACKGROUND_COLOR = new Color(0.4f, 0.4f, 0.4f, 1);
@@ -27,7 +28,9 @@ public class AnimationEditor {
     public String animation;
     private float timeToXMultiplier = 50;
     private KeyframeEditorWindow editorWindow;
-    public AnimationEditor(Node rootNode, Runnable pauseButtonCallback, Runnable resetButtonCallback) {
+    private Consumer<Float> timeSetter;
+    public AnimationEditor(Node rootNode, Runnable pauseButtonCallback, Consumer<Float> timeSetter) {
+        this.timeSetter = timeSetter;
         this.rootNode = rootNode;
         this.spriteBatch = new SpriteBatch();
         this.shapeRenderer = new ShapeRenderer();
@@ -39,7 +42,7 @@ public class AnimationEditor {
         this.font = new BitmapFont();
         this.fontLayout = new GlyphLayout();
         this.animation = null;
-        this.editorWindow = new KeyframeEditorWindow(pauseButtonCallback, resetButtonCallback);
+        this.editorWindow = new KeyframeEditorWindow(pauseButtonCallback, () -> timeSetter.accept(0f));
     }
     public void resize(int width, int height){
         this.camera.viewportWidth = width;
@@ -75,6 +78,10 @@ public class AnimationEditor {
         shapeRenderer.rect((1-SCREEN_SPACE)*camera.viewportWidth, AnimationEditor.SCREEN_SPACE* camera.viewportHeight,camera.viewportWidth*SCREEN_SPACE, camera.viewportHeight*(1-AnimationEditor.SCREEN_SPACE));
         shapeRenderer.end();
         this.editorWindow.draw();
+        Vector3 mouse = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+        if(mouse.y < SCREEN_SPACE*Gdx.graphics.getHeight() && mouse.x > maxTextSize+(NAME_PADDING*2) && Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
+            timeSetter.accept((mouse.x-(maxTextSize+(NAME_PADDING*2)))/timeToXMultiplier);
+        }
     }
     public void drawRow(Node node, float maxTextSize, int yIndex){
         Vector3 mouse = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
