@@ -24,9 +24,6 @@ import java.util.concurrent.atomic.AtomicReference;
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class FolderMain extends ApplicationAdapter {
 	private SpriteBatch batch;
-	private Texture head;
-	private Texture face;
-	private Texture body;
 	private Node node;
 	private AtomicReference<Float> time;
 	private OrthographicCamera sceneCamera;
@@ -46,12 +43,8 @@ public class FolderMain extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		shapeRenderer = new ShapeRenderer();
 		shapeRenderer.setAutoShapeType(true);
-		head = new Texture("head.png");
-		face = new Texture("face.png");
-		body = new Texture("body.png");
 		time = new AtomicReference<>(0f);
 		node = new Node();
-		node.nodeTexture.texture = new TextureRegion(head);
 		this.animationEditor = new AnimationEditor(fileChooser, node, () -> {
 			paused.set(!paused.get());
 		}, (t) -> {
@@ -86,6 +79,10 @@ public class FolderMain extends ApplicationAdapter {
 			shapeRenderer.circle(selectedTransform.x, selectedTransform.y, 5);
 			shapeRenderer.end();
 		}
+		if(Gdx.input.isKeyJustPressed(Input.Keys.DOWN))
+			this.animationEditor.nodeIndex++;
+		if(Gdx.input.isKeyJustPressed(Input.Keys.UP))
+			this.animationEditor.nodeIndex--;
 		this.animationEditor.draw(time.get());
 		if(Gdx.input.isKeyJustPressed(Input.Keys.O)){
 			GDXTextPrompt bDialog = dialogs.newDialog(GDXTextPrompt.class);
@@ -108,9 +105,6 @@ public class FolderMain extends ApplicationAdapter {
 	}
 	@Override
 	public void dispose() {
-		head.dispose();
-		face.dispose();
-		body.dispose();
 		batch.dispose();
 		shapeRenderer.dispose();
 		this.animationEditor.dispose();

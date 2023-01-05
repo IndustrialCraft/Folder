@@ -17,7 +17,7 @@ public class Node {
         this.parent = parent;
         this.animations = new HashMap<>();
         this.children = new HashSet<>();
-        this.nodeTexture = new NodeTexture(null);
+        this.nodeTexture = new NodeTexture();
         this.name = "node #" + NAME_GENERATOR.getAndIncrement();
     }
     public Animation getOrCreateAnimation(String name){
@@ -53,8 +53,8 @@ public class Node {
     public String getRealName(){
         return name + "(" + (parent==null?"root":parent.name) + ")";
     }
-    public HashSet<Node> getChildAndSelfRecursively(){
-        HashSet<Node> set = new HashSet<>();
+    public List<Node> getChildAndSelfRecursively(){
+        List<Node> set = new ArrayList<>();
         set.add(this);
         children.forEach(node -> set.addAll(node.getChildAndSelfRecursively()));
         return set;

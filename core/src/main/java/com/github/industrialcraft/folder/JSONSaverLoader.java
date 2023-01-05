@@ -12,7 +12,7 @@ public class JSONSaverLoader {
         json.addProperty("name", rootNode.name);
         json.addProperty("originX", rootNode.nodeTexture.xOrigin);
         json.addProperty("originY", rootNode.nodeTexture.yOrigin);
-        json.addProperty("texture", "");
+        json.addProperty("texture", rootNode.nodeTexture.getTexturePath());
         JsonObject animations = new JsonObject();
         for(var entry : rootNode.animations.entrySet()){
             JsonArray animation = new JsonArray();
@@ -29,6 +29,11 @@ public class JSONSaverLoader {
             animations.add(entry.getKey(), animation);
         }
         json.add("animations", animations);
+        JsonArray children = new JsonArray();
+        for(Node child : rootNode.getChildren()){
+            children.add(toJson(child));
+        }
+        json.add("children", children);
         return json;
     }
     public static Node fromJson(JsonObject jsonObject, Function<String, TextureRegion> textureResolver){

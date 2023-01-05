@@ -11,8 +11,10 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class AnimationEditor {
     public static final Color BACKGROUND_COLOR = new Color(0.4f, 0.4f, 0.4f, 1);
@@ -31,6 +33,7 @@ public class AnimationEditor {
     private float timeToXMultiplier = 50;
     private KeyframeEditorWindow editorWindow;
     private Consumer<Float> timeSetter;
+    public int nodeIndex;
     public AnimationEditor(NativeFileChooser fileChooser, Node rootNode, Runnable pauseButtonCallback, Consumer<Float> timeSetter) {
         this.timeSetter = timeSetter;
         this.rootNode = rootNode;
@@ -45,6 +48,7 @@ public class AnimationEditor {
         this.fontLayout = new GlyphLayout();
         this.animation = null;
         this.editorWindow = new KeyframeEditorWindow(fileChooser, pauseButtonCallback, () -> timeSetter.accept(0f));
+        this.nodeIndex = 0;
     }
     public String getAnimation() {
         return animation;
@@ -75,12 +79,16 @@ public class AnimationEditor {
         shapeRenderer.end();
         if(animation == null)
             return;
-        Set<Node> nodes = rootNode.getChildAndSelfRecursively();
+        List<Node> nodes = rootNode.getChildAndSelfRecursively();
         float maxTextSize = nodes.stream().map(node -> {fontLayout.setText(font, node.getRealName());return fontLayout.width;}).reduce(0f, Math::max);
-        int yIndex = 0;
-        for(Node node : nodes){
-            drawRow(node, maxTextSize, yIndex);
-            yIndex++;
+
+        if(nodeIndex < 0)
+            nodeIndex = nodes.size()-ROWS_ON_SCREEN;
+        if(nodes.size() > ROWS_ON_SCREEN && nodeIndex > nodes.size()-ROWS_ON_SCREEN){
+            nodeIndex = 0;
+        }
+        for(int i = 0;i < ROWS_ON_SCREEN && i < nodes.size();i++){
+            drawRow(nodes.get(i+nodeIndex), maxTextSize, i);
         }
         shapeRenderer.begin();
         shapeRenderer.setColor(0, 1, 0, 1);

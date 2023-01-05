@@ -92,10 +92,7 @@ public class KeyframeEditorWindow {
             fileChooser.chooseFile(textureFileChooser, new NativeFileChooserCallback() {
                 @Override
                 public void onFileChosen(FileHandle file) {
-                    //todo: dispose, check if others use
-                    //if(node.nodeTexture.texture != null)
-                    //    node.nodeTexture.texture.getTexture().dispose();
-                    node.nodeTexture.texture = new TextureRegion(new Texture(file));
+                    node.nodeTexture.setTexture(file);
                 }
                 @Override
                 public void onCancellation() {}
