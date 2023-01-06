@@ -46,6 +46,7 @@ public class Node {
     }
     public void removeChild(Node child){
         children.remove(child);
+        child.dispose();
     }
     public void draw(SpriteBatch batch, String animation, float time){
         this.nodeTexture.draw(batch, getTransformedTransform(animation, time));
@@ -63,6 +64,13 @@ public class Node {
         draw(batch, animation, time);
         for(Node node : children){
             node.drawRecursively(batch, animation, time);
+        }
+    }
+    public void dispose(){
+        if(this.nodeTexture.getTexture() != null)
+            this.nodeTexture.getTexture().dispose();
+        for(Node child : children.stream().toList()){
+            removeChild(child);
         }
     }
 }

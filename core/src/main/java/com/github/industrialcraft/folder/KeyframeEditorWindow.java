@@ -2,22 +2,20 @@ package com.github.industrialcraft.folder;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import de.tomgrill.gdxdialogs.core.GDXDialogs;
+import de.tomgrill.gdxdialogs.core.dialogs.GDXTextPrompt;
+import de.tomgrill.gdxdialogs.core.listener.TextPromptListener;
 import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 import games.spooky.gdx.nativefilechooser.NativeFileChooserCallback;
 import games.spooky.gdx.nativefilechooser.NativeFileChooserConfiguration;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -34,8 +32,14 @@ public class KeyframeEditorWindow {
     private NativeFileChooserConfiguration textureFileChooser;
     private NativeFileChooser fileChooser;
     private Label animationNameLabel;
-    public KeyframeEditorWindow(NativeFileChooser fileChooser, Runnable pauseButtonCallback, Runnable resetButtonCallback) {
+    public Node rootNode;
+    private final AnimationEditor parent;
+    private final GDXDialogs dialogs;
+    public KeyframeEditorWindow(NativeFileChooser fileChooser, Runnable pauseButtonCallback, Runnable resetButtonCallback, Node rootNode, AnimationEditor parent, GDXDialogs dialogs) {
         this.fileChooser = fileChooser;
+        this.rootNode = rootNode;
+        this.parent = parent;
+        this.dialogs = dialogs;
         this.textureFileChooser = new NativeFileChooserConfiguration();
         this.textureFileChooser.directory = Gdx.files.internal("");
         this.textureFileChooser.mimeFilter = "image/*";
@@ -64,6 +68,53 @@ public class KeyframeEditorWindow {
             }
         });
         this.controlsTable.add(resetButton);
+        TextButton changeAnimationButton = new TextButton("change animation", skin);
+        changeAnimationButton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                GDXTextPrompt bDialog = dialogs.newDialog(GDXTextPrompt.class);
+                bDialog.setTitle("Switch to animation");
+                bDialog.setMessage("Animation name: ");
+
+                bDialog.setCancelButtonLabel("Cancel");
+                bDialog.setConfirmButtonLabel("Confirm");
+
+                bDialog.setTextPromptListener(new TextPromptListener() {
+                    @Override
+                    public void confirm(String text) {
+                        parent.setAnimation(text);
+                    }
+                    @Override
+                    public void cancel() {}
+                });
+                bDialog.build().show();
+            }
+        });
+        this.controlsTable.add(changeAnimationButton);
+        TextButton exportButton = new TextButton("export", skin);
+        exportButton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                try {
+                    SaverLoader.exportZip(new File("exported.zip"), rootNode);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        this.controlsTable.add(exportButton);
+        TextButton loadButton = new TextButton("load", skin);
+        loadButton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                try {
+                    parent.setRootNode(SaverLoader.loadZip(new File("exported.zip")));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        this.controlsTable.add(loadButton);
         this.animationNameLabel = new Label("", skin);
         this.controlsTable.add(animationNameLabel);
         table = new VerticalGroup();
@@ -153,7 +204,7 @@ public class KeyframeEditorWindow {
         HorizontalGroup wrapper = new HorizontalGroup();
         wrapper.addActor(new Label(name+":", skin));
         TextField btn = new TextField(""+getter.get(), skin);
-        btn.setTextFieldFilter((textField, c) -> Character.isDigit(c) || c == '-');
+        btn.setTextFieldFilter((textField, c) -> Character.isDigit(c) || c == '-' || c == '.');
         btn.setTextFieldListener((textField, c) -> {
             if(btn.getText().isEmpty())
                 return;

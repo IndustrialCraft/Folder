@@ -5,17 +5,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import de.tomgrill.gdxdialogs.core.GDXDialogs;
 import de.tomgrill.gdxdialogs.core.GDXDialogsSystem;
-import de.tomgrill.gdxdialogs.core.dialogs.GDXButtonDialog;
-import de.tomgrill.gdxdialogs.core.dialogs.GDXTextPrompt;
-import de.tomgrill.gdxdialogs.core.listener.ButtonClickListener;
-import de.tomgrill.gdxdialogs.core.listener.TextPromptListener;
 import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,13 +38,16 @@ public class FolderMain extends ApplicationAdapter {
 		shapeRenderer.setAutoShapeType(true);
 		time = new AtomicReference<>(0f);
 		node = new Node();
-		this.animationEditor = new AnimationEditor(fileChooser, node, () -> {
+		this.animationEditor = new AnimationEditor(dialogs, fileChooser, node, () -> {
 			paused.set(!paused.get());
 		}, (t) -> {
 			time.set(t);
 			paused.set(true);
-		});
+		}, this);
 		this.animationEditor.setAnimation("default");
+	}
+	public void setRootNode(Node rootNode){
+		this.node = rootNode;
 	}
 	@Override
 	public void resize (int width, int height) {
@@ -84,24 +80,6 @@ public class FolderMain extends ApplicationAdapter {
 		if(Gdx.input.isKeyJustPressed(Input.Keys.UP))
 			this.animationEditor.nodeIndex--;
 		this.animationEditor.draw(time.get());
-		if(Gdx.input.isKeyJustPressed(Input.Keys.O)){
-			GDXTextPrompt bDialog = dialogs.newDialog(GDXTextPrompt.class);
-			bDialog.setTitle("Switch to animation");
-			bDialog.setMessage("Animation name: ");
-
-			bDialog.setCancelButtonLabel("Cancel");
-			bDialog.setConfirmButtonLabel("Confirm");
-
-			bDialog.setTextPromptListener(new TextPromptListener() {
-				@Override
-				public void confirm(String text) {
-					animationEditor.setAnimation(text);
-				}
-				@Override
-				public void cancel() {}
-			});
-			bDialog.build().show();
-		}
 	}
 	@Override
 	public void dispose() {

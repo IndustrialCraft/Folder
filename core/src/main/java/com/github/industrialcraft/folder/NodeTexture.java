@@ -16,11 +16,22 @@ public class NodeTexture {
         this.xOrigin = 0;
         this.yOrigin = 0;
     }
+    public Texture getTexture() {
+        if(texture == null)
+            return null;
+        return texture.getTexture();
+    }
     public void setTexture(FileHandle handle){
         if(this.texture != null)
             this.texture.getTexture().dispose();
         this.texture = new TextureRegion(new Texture(handle));
         this.texturePath = handle.toString();
+    }
+    public void setTexture(Texture texture, String path){
+        if(this.texture != null)
+            this.texture.getTexture().dispose();
+        this.texture = new TextureRegion(texture);
+        this.texturePath = path;
     }
     public String getTexturePath() {
         return texturePath;

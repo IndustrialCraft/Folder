@@ -9,12 +9,11 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
+import de.tomgrill.gdxdialogs.core.GDXDialogs;
 import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class AnimationEditor {
     public static final Color BACKGROUND_COLOR = new Color(0.4f, 0.4f, 0.4f, 1);
@@ -23,7 +22,7 @@ public class AnimationEditor {
     public static final float NAME_PADDING = 10;
     public static int ROWS_ON_SCREEN = 4;
     public static float SCREEN_SPACE = 0.4f;
-    public final Node rootNode;
+    public Node rootNode;
     private SpriteBatch spriteBatch;
     private ShapeRenderer shapeRenderer;
     private OrthographicCamera camera;
@@ -34,9 +33,11 @@ public class AnimationEditor {
     private KeyframeEditorWindow editorWindow;
     private Consumer<Float> timeSetter;
     public int nodeIndex;
-    public AnimationEditor(NativeFileChooser fileChooser, Node rootNode, Runnable pauseButtonCallback, Consumer<Float> timeSetter) {
+    public final FolderMain main;
+    public AnimationEditor(GDXDialogs dialogs, NativeFileChooser fileChooser, Node rootNode, Runnable pauseButtonCallback, Consumer<Float> timeSetter, FolderMain main) {
         this.timeSetter = timeSetter;
         this.rootNode = rootNode;
+        this.main = main;
         this.spriteBatch = new SpriteBatch();
         this.shapeRenderer = new ShapeRenderer();
         this.shapeRenderer.setAutoShapeType(true);
@@ -47,8 +48,14 @@ public class AnimationEditor {
         this.font = new BitmapFont();
         this.fontLayout = new GlyphLayout();
         this.animation = null;
-        this.editorWindow = new KeyframeEditorWindow(fileChooser, pauseButtonCallback, () -> timeSetter.accept(0f));
+        this.editorWindow = new KeyframeEditorWindow(fileChooser, pauseButtonCallback, () -> timeSetter.accept(0f), rootNode, this, dialogs);
         this.nodeIndex = 0;
+    }
+    public void setRootNode(Node rootNode){
+        this.rootNode = rootNode;
+        setAnimation("default");
+        this.editorWindow.rootNode = rootNode;
+        this.main.setRootNode(rootNode);
     }
     public String getAnimation() {
         return animation;
@@ -91,12 +98,19 @@ public class AnimationEditor {
             drawRow(nodes.get(i+nodeIndex), maxTextSize, i);
         }
         shapeRenderer.begin();
+        float ending = nodes.stream().map(node -> {
+            var anims = node.animations.get(animation).transforms;
+            return anims.stream().map(t -> t.length).reduce(-anims.get(anims.size()-1).length, Float::sum);
+        }).max(Float::compare).get();
+        shapeRenderer.setColor(1, 0, 0, 1);
+        shapeRenderer.rect(maxTextSize+NODE_SETTING_WIDTH+(NAME_PADDING*2)+(ending*timeToXMultiplier), 0, 1, SCREEN_SPACE*Gdx.graphics.getHeight());
+
         shapeRenderer.setColor(0, 1, 0, 1);
         shapeRenderer.line(maxTextSize+NODE_SETTING_WIDTH+(NAME_PADDING*2)+(playTime*timeToXMultiplier), 0, maxTextSize+NODE_SETTING_WIDTH+(NAME_PADDING*2)+(playTime*timeToXMultiplier), SCREEN_SPACE*Gdx.graphics.getHeight());
         shapeRenderer.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(BACKGROUND_COLOR);
-        shapeRenderer.rect((1-SCREEN_SPACE)*camera.viewportWidth, AnimationEditor.SCREEN_SPACE* camera.viewportHeight,camera.viewportWidth*SCREEN_SPACE, camera.viewportHeight*(1-AnimationEditor.SCREEN_SPACE));
+        shapeRenderer.rect((1-SCREEN_SPACE)*camera.viewportWidth, AnimationEditor.SCREEN_SPACE*camera.viewportHeight,camera.viewportWidth*SCREEN_SPACE, camera.viewportHeight*(1-AnimationEditor.SCREEN_SPACE));
         shapeRenderer.end();
         this.editorWindow.draw();
         Vector3 mouse = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
@@ -114,8 +128,7 @@ public class AnimationEditor {
         shapeRenderer.line(0, startPosY, Gdx.graphics.getWidth(), startPosY);
         shapeRenderer.line(splitterX, startPosY, splitterX, startPosY+height);
         shapeRenderer.setColor(1, 1, 1, 1);
-        float totalAnimationLength = node.getOrCreateAnimation(animation).transforms.stream().map(e -> e.length).reduce(0f, Float::sum);
-        shapeRenderer.line(splitterX, startPosY+(height/2), splitterX+(totalAnimationLength*timeToXMultiplier), startPosY+(height/2));
+        shapeRenderer.line(splitterX, startPosY+(height/2), Gdx.graphics.getWidth(), startPosY+(height/2));
         shapeRenderer.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         float timeAccumulator = 0;
