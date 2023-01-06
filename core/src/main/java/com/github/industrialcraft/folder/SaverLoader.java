@@ -110,20 +110,15 @@ public class SaverLoader {
     }
     public static Node loadZip(File zip) throws IOException {
         ZipFile zipFile = new ZipFile(zip);
-        var entries = zipFile.entries();
-        HashMap<String,Texture> textures = new HashMap<>();
-        while(entries.hasMoreElements()){
-            ZipEntry entry = entries.nextElement();
-            if(!entry.getName().endsWith(".png"))
-                continue;
-            InputStream stream = zipFile.getInputStream(entry);
-            textures.put(entry.getName().replace(".png", ""), new Texture(new FileHandle(""){
-                @Override
-                public InputStream read() {
-                    return stream;
+        return fromJson(JsonParser.parseString(new String(zipFile.getInputStream(zipFile.getEntry("renderdata.json")).readAllBytes())).getAsJsonObject(), s -> new Texture(new FileHandle(){
+            @Override
+            public InputStream read() {
+                try {
+                    return zipFile.getInputStream(zipFile.getEntry(s + ".png"));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-            }));
-        }
-        return fromJson(JsonParser.parseString(new String(zipFile.getInputStream(zipFile.getEntry("renderdata.json")).readAllBytes())).getAsJsonObject(), textures::get);
+            }
+        }));
     }
 }
