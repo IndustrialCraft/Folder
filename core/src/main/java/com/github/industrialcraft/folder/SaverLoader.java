@@ -109,16 +109,17 @@ public class SaverLoader {
         zip.close();
     }
     public static Node loadZip(File zip) throws IOException {
-        ZipFile zipFile = new ZipFile(zip);
-        return fromJson(JsonParser.parseString(new String(zipFile.getInputStream(zipFile.getEntry("renderdata.json")).readAllBytes())).getAsJsonObject(), s -> new Texture(new FileHandle(){
-            @Override
-            public InputStream read() {
-                try {
-                    return zipFile.getInputStream(zipFile.getEntry(s + ".png"));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+        try(ZipFile zipFile = new ZipFile(zip)) {
+            return fromJson(JsonParser.parseString(new String(zipFile.getInputStream(zipFile.getEntry("renderdata.json")).readAllBytes())).getAsJsonObject(), s -> new Texture(new FileHandle() {
+                @Override
+                public InputStream read() {
+                    try {
+                        return zipFile.getInputStream(zipFile.getEntry(s + ".png"));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-            }
-        }));
+            }));
+        }
     }
 }
