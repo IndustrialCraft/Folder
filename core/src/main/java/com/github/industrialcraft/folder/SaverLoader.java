@@ -110,7 +110,7 @@ public class SaverLoader {
     }
     public static Node loadZip(File zip) throws IOException {
         try(ZipFile zipFile = new ZipFile(zip)) {
-            return fromJson(JsonParser.parseString(new String(zipFile.getInputStream(zipFile.getEntry("renderdata.json")).readAllBytes())).getAsJsonObject(), s -> new Texture(new FileHandle() {
+            return fromJson(JsonParser.parseString(new String(zipFile.getInputStream(zipFile.getEntry("renderdata.json")).readAllBytes())).getAsJsonObject(), s -> new Texture(new FileHandle("") {
                 @Override
                 public InputStream read() {
                     try {
