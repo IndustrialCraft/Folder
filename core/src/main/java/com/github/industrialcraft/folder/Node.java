@@ -48,8 +48,8 @@ public class Node {
         children.remove(child);
         child.dispose();
     }
-    public void draw(SpriteBatch batch, String animation, float time){
-        this.nodeTexture.draw(batch, getTransformedTransform(animation, time));
+    public void draw(Transform baseTransform, SpriteBatch batch, String animation, float time){
+        this.nodeTexture.draw(batch, baseTransform==null?getTransformedTransform(animation, time):baseTransform.transform(getTransformedTransform(animation, time)));
     }
     public String getRealName(){
         return name + "(" + (parent==null?"root":parent.name) + ")";
@@ -60,10 +60,10 @@ public class Node {
         children.forEach(node -> set.addAll(node.getChildAndSelfRecursively()));
         return set;
     }
-    public void drawRecursively(SpriteBatch batch, String animation, float time){
-        draw(batch, animation, time);
+    public void drawRecursively(Transform baseTransform, SpriteBatch batch, String animation, float time){
+        draw(baseTransform, batch, animation, time);
         for(Node node : children){
-            node.drawRecursively(batch, animation, time);
+            node.drawRecursively(baseTransform, batch, animation, time);
         }
     }
     public void dispose(){

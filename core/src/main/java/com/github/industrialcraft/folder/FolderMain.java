@@ -66,7 +66,7 @@ public class FolderMain extends ApplicationAdapter {
 			time.set(time.get()+Gdx.graphics.getDeltaTime());
 		Gdx.gl.glViewport(0, (int) (AnimationEditor.SCREEN_SPACE*Gdx.graphics.getHeight()), (int) ((1-KeyframeEditorWindow.SCREEN_SPACE)*sceneCamera.viewportWidth), (int) (sceneCamera.viewportHeight*(1-AnimationEditor.SCREEN_SPACE)));
 		batch.begin();
-		node.drawRecursively(batch, animationEditor.getAnimation(), time.get());
+		node.drawRecursively(null, batch, animationEditor.getAnimation(), time.get());
 		batch.end();
 		Transform selectedTransform = animationEditor.getSelectedTransform(time.get());
 		if(selectedTransform != null) {

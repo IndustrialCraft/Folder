@@ -24,7 +24,7 @@ public class Transform {
         Matrix22 rotation = Matrix22.createRotationMatrix(this.rotation);
         Vector2 target = new Vector2();
         rotation.transform(position, target);
-        return new Transform((float) (this.x + target.x), (float) (this.y + target.y), /*todo:check if correct*/this.rotation+other.rotation, this.size*other.size, this.opacity*other.opacity);
+        return new Transform((float) (this.x + (target.x*this.size)), (float) (this.y + (target.y*this.size)), /*todo:check if correct*/this.rotation+other.rotation, this.size*other.size, this.opacity*other.opacity);
     }
     public Transform lerp(Transform other, float value){
         if(value < 0 || value > 1)
