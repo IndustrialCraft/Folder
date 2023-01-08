@@ -90,11 +90,11 @@ public class AnimationEditor {
         float maxTextSize = nodes.stream().map(node -> {fontLayout.setText(font, node.getRealName());return fontLayout.width;}).reduce(0f, Math::max);
 
         if(nodeIndex < 0)
-            nodeIndex = nodes.size()-ROWS_ON_SCREEN;
+            nodeIndex = Math.max(nodes.size()-ROWS_ON_SCREEN, 0);
         if(nodes.size() > ROWS_ON_SCREEN && nodeIndex > nodes.size()-ROWS_ON_SCREEN){
             nodeIndex = 0;
         }
-        for(int i = 0;i < ROWS_ON_SCREEN && i < nodes.size();i++){
+        for(int i = 0;i < ROWS_ON_SCREEN && i+nodeIndex < nodes.size();i++){
             drawRow(nodes.get(i+nodeIndex), maxTextSize, i);
         }
         shapeRenderer.begin();
