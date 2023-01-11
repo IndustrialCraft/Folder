@@ -68,6 +68,9 @@ public class FolderMain extends ApplicationAdapter {
 		batch.begin();
 		node.drawRecursively(null, batch, animationEditor.getAnimation(), time.get());
 		batch.end();
+		shapeRenderer.begin();
+		node.drawLightBBRecursively(null, shapeRenderer, animationEditor.getAnimation(), time.get());
+		shapeRenderer.end();
 		Transform selectedTransform = animationEditor.getSelectedTransform(time.get());
 		if(selectedTransform != null) {
 			shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);

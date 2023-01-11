@@ -24,15 +24,19 @@ public class SaverLoader {
     public static JsonObject toJson(Node rootNode){
         return toJson(rootNode, new AtomicInteger(0), null);
     }
-    private static JsonObject toJson(Node rootNode, AtomicInteger textureIdGen, HashMap<Integer,Texture> textures){
+    private static JsonObject toJson(Node rootNode, AtomicInteger textureIdGen, HashMap<Integer,Pixmap> textures){
         JsonObject json = new JsonObject();
         json.addProperty("name", rootNode.name);
+        json.addProperty("lightBBx", rootNode.lightBoundingBox.x);
+        json.addProperty("lightBBy", rootNode.lightBoundingBox.y);
+        json.addProperty("lightBBw", rootNode.lightBoundingBox.width);
+        json.addProperty("lightBBh", rootNode.lightBoundingBox.height);
         json.addProperty("originX", rootNode.nodeTexture.xOrigin);
         json.addProperty("originY", rootNode.nodeTexture.yOrigin);
         if(rootNode.nodeTexture.getTexture() != null) {
             json.addProperty("texture", textureIdGen == null ? rootNode.nodeTexture.getTexturePath() : ("t" + textureIdGen.incrementAndGet()));
             if (textureIdGen != null && textures != null)
-                textures.put(textureIdGen.get(), rootNode.nodeTexture.getTexture());
+                textures.put(textureIdGen.get(), rootNode.nodeTexture.getPixmap());
         }
         JsonObject animations = new JsonObject();
         for(var entry : rootNode.animations.entrySet()){
@@ -57,14 +61,26 @@ public class SaverLoader {
         json.add("children", children);
         return json;
     }
+    private static float getAsFloatOr(JsonElement element, float defaultVal){
+        if(element == null)
+            return defaultVal;
+        if(element.isJsonNull())
+            return defaultVal;
+        return element.getAsFloat();
+    }
     public static Node fromJson(JsonObject jsonObject, Function<String, Texture> textureResolver){
         Node node = new Node();
         node.name = jsonObject.get("name").getAsString();
+        node.lightBoundingBox.x = getAsFloatOr(jsonObject.get("lightBBx"), 0);
+        node.lightBoundingBox.y = getAsFloatOr(jsonObject.get("lightBBy"), 0);
+        node.lightBoundingBox.width = getAsFloatOr(jsonObject.get("lightBBw"), 0);
+        node.lightBoundingBox.height = getAsFloatOr(jsonObject.get("lightBBh"), 0);
         node.nodeTexture.xOrigin = jsonObject.get("originX").getAsFloat();
         node.nodeTexture.yOrigin = jsonObject.get("originY").getAsFloat();
         JsonElement texture = jsonObject.get("texture");
         if(texture != null){
-            node.nodeTexture.setTexture(textureResolver.apply(texture.getAsString()), texture.getAsString());
+            Texture texture1 = textureResolver.apply(texture.getAsString());
+            node.nodeTexture.setTexture(texture1, texture.getAsString());
         }
         JsonObject animations = jsonObject.getAsJsonObject("animations");
         for(var anim : animations.asMap().entrySet()){
@@ -89,18 +105,14 @@ public class SaverLoader {
         return node;
     }
     public static void exportZip(File file, Node rootNode) throws IOException {
-        HashMap<Integer,Texture> textures = new HashMap<>();
+        HashMap<Integer,Pixmap> textures = new HashMap<>();
         ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(file));
         zip.putNextEntry(new ZipEntry("renderdata.json"));
         zip.write(toJson(rootNode, new AtomicInteger(0), textures).toString().getBytes(StandardCharsets.UTF_8));
         zip.closeEntry();
         for(var e : textures.entrySet()){
             zip.putNextEntry(new ZipEntry("t" + e.getKey() + ".png"));
-            Texture texture = e.getValue();
-            if (!texture.getTextureData().isPrepared()) {
-                texture.getTextureData().prepare();
-            }
-            Pixmap pixmap = texture.getTextureData().consumePixmap();
+            Pixmap pixmap = e.getValue();
             PixmapIO.PNG pngWriter = new PixmapIO.PNG((int)(pixmap.getWidth() * pixmap.getHeight() * 1.5f)); //approximated deflated size
             pngWriter.setFlipY(false);
             pngWriter.write(zip, pixmap);

@@ -96,7 +96,7 @@ public class KeyframeEditorWindow {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 try {
-                    SaverLoader.exportZip(new File("exported.zip"), rootNode);
+                    SaverLoader.exportZip(new File("exported.zip"), KeyframeEditorWindow.this.rootNode);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -157,6 +157,10 @@ public class KeyframeEditorWindow {
         addNumberedField("rotation", table, n -> controllingAnimation.transforms.get(index).transform.rotation= (float) Math.toRadians(n), () -> (float) Math.toDegrees(controllingAnimation.transforms.get(index).transform.rotation));
         addNumberedField("size", table, n -> controllingAnimation.transforms.get(index).transform.size=n, () -> controllingAnimation.transforms.get(index).transform.size);
         addNumberedField("opacity", table, n -> controllingAnimation.transforms.get(index).transform.opacity=n, () -> controllingAnimation.transforms.get(index).transform.opacity);
+        addNumberedField("lightBBx", table, n -> node.lightBoundingBox.x=n, () -> node.lightBoundingBox.x);
+        addNumberedField("lightBBy", table, n -> node.lightBoundingBox.y=n, () -> node.lightBoundingBox.y);
+        addNumberedField("lightBBw", table, n -> node.lightBoundingBox.width=n, () -> node.lightBoundingBox.width);
+        addNumberedField("lightBBh", table, n -> node.lightBoundingBox.height=n, () -> node.lightBoundingBox.height);
         addButton("remove", table, () -> {
             if(index == 0)
                 return;
