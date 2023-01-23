@@ -34,6 +34,9 @@ public class Animation {
             return lastTransform;
         throw new IllegalStateException("something went wrong");
     }
+    public boolean didAnimationEnd(float time){
+        return time >= transforms.stream().map(e -> e.length).reduce(0f, Float::sum);
+    }
     public static class TransformWithLength{
         public final Transform transform;
         public float length;

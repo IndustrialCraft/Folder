@@ -27,8 +27,11 @@ public class Transform {
         return new Transform((float) (this.x + (target.x*this.size)), (float) (this.y + (target.y*this.size)), /*todo:check if correct*/this.rotation+other.rotation, this.size*other.size, this.opacity*other.opacity);
     }
     public Transform lerp(Transform other, float value){
-        if(value < 0 || value > 1)
-            throw new IllegalArgumentException("lerp value must be in range 0..1, was " + value);
+        if(value < 0)
+            value = 0;
+        if(value > 1)
+            value = 1;
+
         return new Transform(MathUtils.lerp(this.x, other.x, value), MathUtils.lerp(this.y, other.y, value), MathUtils.lerp(this.rotation, other.rotation, value), MathUtils.lerp(this.size, other.size, value), MathUtils.lerp(this.opacity, other.opacity, value));
     }
 }
